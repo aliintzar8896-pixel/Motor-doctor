@@ -1,0 +1,344 @@
+STUDENT MANAGEMENT SYSTEM
+Project Synopsis
+BACHELOR OF COMPUTER APPLICATION
+5th SEM
+Project Guide:                                                                       Submitted By:
+Dr. Mithilesh Kumar Sharma                                                           Kashaf Shafeeq
+Mr. Yaduvansh Mani                                                                         TCA2468249
+SEC- E
+217360532258000
+FACULTY OF ENGINEERING & COMPUTING SCIENCES
+TEERTHANKER MAHAVEER UNIVERSITY
+MORADABAD-244001
+SEPTEMBER ,2026
+DECLARATION
+I, Kashaf Shafeeq (TCA2468249), student of BCA, 5th Semester, studying at Faculty Of Engineering and Computer Sciences, Teerthanker Mahaveer University, Moradabad (U.P.), hereby declare that the Internship Report/Dissertation " Student Management System" submitted in Partial fulfilment for the degree of Bachelor of Computer Applications (BCA), is the innovative exertion showed thru me.
+The evidence in addition information specified in the description is faithful to the superlative of my knowledge.
+The Description of Internship Report/Dissertation is not presence succumbed to any other University for award of any other Degree, Diploma and Fellowship.
+Date: ...
+Place: Moradabad
+Submitted By:
+Kashaf Shafeeq (TCA2468249)
+CERTIFICATE
+This is to certify that Internship Report/Dissertation entitled " Student Management System " has been succumbed in Partial fulfilment of the prerequisite for the degree of Bachelor of Computer Applications (BCA) is carried out by student, whose name is listed below under my supervision and guidance.
+Submitted By:
+Kashaf Shafeeq (TCA2468249)
+Guide Name:                                                                                                             Guide Signature:
+Guide Name:
+Date
+ACKNOWLEDGEMENT
+I am thankful and greatly acknowledge the numerous personalities involved in lending their help to make my internship report/Dissertation " Student Management System " a successful one.
+First, I want to express my gratitude my Supervisor/Guide “Dr. Mithilesh Kumar Sharma” Moradabad, who helped me from the beginning of my internship report/Dissertation. I was fully supported throughout the internship report/Dissertation duration with all the required data and related details to prepare this report.
+I also take this opportunity to express my deep sense of gratitude to our Hon'ble vice Principal “Prof. Ashok Kumar”, TMU, for providing an excellent academic climate in the college that made this endeavour possible.
+I give my wholehearted admiration and a deep sense of gratitude to HOD, Faculty of Engineering and Computer Sciences, TMU for his/her inspiration, valuable guidance, encouragement, suggestion and overall help throughout.
+I express my sincere thanks to the Internship/Dissertation coordinator "Coordinator of Internship/Dissertation", TMU, for his taken interest and invaluable help throughout the project.
+Date:
+Kashaf Shafeeq (TCA2468249)
+ABSTRACT
+The Student Management System is a web-based application developed to simplify and digitize the management of student information in schools. Traditional methods of maintaining student records often involve paperwork and manual data entry, which can be time-consuming, difficult to maintain, and prone to errors. The proposed system provides a centralized platform for storing, updating, and managing student-related information efficiently.
+The system is developed using Python and Django as the primary backend technologies, along with HTML, CSS, and JavaScript for designing an interactive and user-friendly interface. Django provides a structured framework for handling application logic, database operations, authentication, and communication between the user interface and the database.
+The main purpose of the system is to enable authorized users to manage student records in an organized manner. The application can maintain important details such as student information, class details, and attendance records. It reduces dependency on manual record-keeping and makes information easier to access, update, and manage.
+The implementation of this system demonstrates the practical application of web development concepts, database management, Python programming, and the Django framework. It also helps improve efficiency, accuracy, and accessibility in school administration.
+The system can be further enhanced by adding features such as examination and marks management, teacher management, fee management, automated report generation, notifications, and role-based access control. Thus, the Student Management System provides a practical foundation for developing a more comprehensive digital solution for school management.
+.
+Keywords: Student Management System, Python, Django, Database Management, Web Application
+Table of Contents
+Certificate……………………………………………………………………………………………………………………………………….3
+Abstract………………………………………………………………………………………………………………………………………….4
+Acknowledgement………………………………………………………………………………………………………………………….5
+List of figures…………………………………………………………………………………………………………………………………6
+List of Tables…………………………………………………………………………………………………………………………………7
+TOC \o "1-3" \h \z \u 1.Project Title PAGEREF _Toc240409834 \h 7
+2.Domain PAGEREF _Toc240409835 \h 7
+3.Problem Statement PAGEREF _Toc240409836 \h 7
+4.Project Description PAGEREF _Toc240409837 \h 7
+4.1Proposed system PAGEREF _Toc240409838 \h 7
+4.2Need for the Project: PAGEREF _Toc240409839 \h 8
+4.3Objectives of the project: PAGEREF _Toc240409840 \h 8
+4.4Aim Of the Project PAGEREF _Toc240409841 \h 9
+4.5Scope Of the Project: PAGEREF _Toc240409842 \h 9
+4.6Introduction to Student Information Management PAGEREF _Toc240409843 \h 10
+4.7Traditional Student Record Management PAGEREF _Toc240409844 \h 10
+4.8Web-Based Student Information Systems PAGEREF _Toc240409845 \h 10
+4.9 Existing Student Management Systems PAGEREF _Toc240409846 \h 11
+5.Methodology PAGEREF _Toc240409847 \h 11
+5.1Requirement Analysis: PAGEREF _Toc240409848 \h 11
+5.2System Design: PAGEREF _Toc240409849 \h 12
+5.3System Modules: PAGEREF _Toc240409850 \h 17
+5.4Development: PAGEREF _Toc240409851 \h 19
+5.5 Testing PAGEREF _Toc240409852 \h 19
+5.6Request-Response Process PAGEREF _Toc240409853 \h 20
+6.Results PAGEREF _Toc240409854 \h 21
+7.FUTURE SCOPE PAGEREF _Toc240409855 \h 24
+8.Conclusion PAGEREF _Toc240409856 \h 25
+9.References PAGEREF _Toc240409857 \h 26
+Project Title
+The title of the proposed project is “Student Management System”.
+Domain
+Web Application Development using Python and Django
+Problem Statement
+Manual maintenance of school student records is associated with a number of recurring problems. These problems become more noticeable as the number of students and the volume of records increase, and they directly affect the efficiency of school administration. The main difficulties associated with manual record management include:
+Large amounts of paperwork that must be filed, stored, and physically maintained.
+Difficulty in searching for a specific student's record among a large collection of physical files.
+Difficulty in updating existing records when student or family details change.
+Data-entry errors that occur during manual writing or transcription of information.
+Duplicate records that may be created unintentionally due to lack of centralized tracking.
+Risk of records being misplaced, damaged, or lost, since they exist only in physical form.
+Time-consuming maintenance, as staff must dedicate significant effort to organizing and updating paper files.
+The proposed Student Management System addresses these issues by storing student information in a structured digital database rather than on paper. A centralized system allows records to be searched, viewed, and updated through a web interface, which reduces the manual effort involved in locating and editing information. Storing data in a single database also reduces the likelihood of duplicate or inconsistent records, and removes the physical risks associated with paper-based storage, such as damage or loss of files.
+Project Description
+Proposed system
+The Student Management System is a web-based application developed using Python and the Django framework. The system is designed to provide a centralized environment for managing student records.
+The frontend of the application is developed using HTML, CSS and JavaScript, which provide the structure, presentation and client-side interaction of the web pages. The backend is implemented using Python and Django, which handles application logic, URL routing, requests and responses, database interaction and other server-side operations.
+The current implementation uses Django's database functionality to store and retrieve student information. Django provides an Object-Relational Mapper (ORM), allowing database models to be defined using Python and providing an API for database operations.
+Need for the Project:
+The need for a Student Management System arises from the difficulties associated with maintaining student information manually.
+In a manual system, searching for a particular student's information may require checking multiple files or registers. Similarly, updating information may require modifying records in several places. Such processes are inefficient and can result in inconsistencies.
+A centralized web-based system can address these difficulties by maintaining student information in a structured database. It can provide faster retrieval, easier modification and more organized storage of records.
+The proposed system is therefore intended to:
+Reduce dependency on manual record keeping.
+Provide centralized storage of student information.
+Make student records easier to access and manage.
+Reduce repetitive data-entry work.
+Provide basic CRUD operations.
+Improve organization and consistency of records.
+Demonstrate the practical implementation of database-driven web development
+Objectives of the project:
+The objectives of this project are as follows:
+To develop a web-based Student Management System for schools.
+To maintain student information in a structured database.
+To simplify the process of adding new student records.
+To provide easy access to student information for authorized users.
+To allow existing student records to be updated as required.
+To allow unnecessary or outdated records to be deleted.
+To reduce paperwork and manual effort involved in record-keeping.
+To improve the organization and accessibility of student records.
+To gain practical experience in Python and Django web development.
+Aim Of the Project
+The primary aim of this project is to design and develop a web-based Student Management System using Python and Django that enables efficient creation, storage, retrieval, modification and deletion of student records.
+The project also aims to provide practical understanding of the development of a database-driven web application
+Scope Of the Project:
+The scope of the proposed system is focused on the basic management of student records.
+The system can include functions such as:
+Adding new student information
+Displaying student records
+Updating existing student information
+Deleting student records
+Storing information in a database
+Retrieving information from the database
+Providing a browser-based interface
+The present version is intended primarily as a student record management application. More advanced institutional functions can be incorporated in future versions
+Introduction to Student Information Management
+Student information management refers to the systematic collection, storage, processing and retrieval of information related to students. Educational institutions may maintain information such as student profiles, courses, academic performance, attendance, enrollment and administrative details.
+As educational institutions increasingly depend on digital information, effective information management has become an important component of institutional administration. A systematic review of web portals in higher education identified information management and storage, software use, technology acceptance and institutional benefits as important themes in this area.
+Digital student information systems therefore provide an alternative to fragmented or paper-based record management by bringing information into a structured environment.
+Traditional Student Record Management
+Traditional student record management generally relies on physical registers, forms, files and spreadsheets.
+Such methods have certain advantages. They are simple to establish and do not require specialized software. However, they can become difficult to manage as the quantity of student information increases.
+Common limitations include:
+Large amounts of paperwork
+Difficulty searching records
+Risk of physical damage or loss
+Repeated data entry
+Difficulty maintaining updated information
+Limited accessibility
+Increased administrative workload
+Research examining web-based student information management has identified manual data management as a source of redundancy, inefficiency and delays, supporting the movement toward digital management information systems.
+Web-Based Student Information Systems
+Web-based student information systems provide an interface through which users can access and manage information using a web browser.
+Unlike a purely paper-based approach, a web application can connect the user interface directly with a backend database. This allows information to be stored centrally and retrieved when required.
+Web portals have been identified as important tools for information management in higher education because they can provide access to relevant information and support institutional decision-making.
+A typical web-based student management architecture consists of:
+User Interface → Application/Backend → Database
+The interface receives information from the user, the backend processes the request, and the database stores or retrieves the required information.
+4.9 Existing Student Management Systems
+Several student management systems have been developed using different programming languages, frameworks and databases.
+For example, existing Django-based student management projects demonstrate features such as student registration, course management, attendance, academic records and administrative
+However, a system containing a large number of modules may also introduce additional development complexity. For a small-scale academic project, implementing the core record-management functions first provides a more manageable development scope.
+Methodology
+The project is developed using a step-by-step software development approach, in which each stage builds upon the work completed in the previous one. This approach helps ensure that the requirements of the system are properly understood before development begins, and that the application is tested and refined before it is considered complete. The stages followed in this project are described below.
+Requirement Analysis:
+The first stage of development involves identifying the requirements of the Student Management System. The requirements are divided into functional and non-functional requirements.
+3.1.1 Functional Requirements
+The functional requirements describe the operations that the system should perform.
+The proposed system should provide the following functionality:
+Add new student records.
+Display existing student records.
+Update student information.
+Delete student records.
+Store student information in a database.
+Retrieve stored information when required.
+Process user requests through the Django backend.
+Display appropriate responses through the web interface.
+These operations form the basic CRUD functionality of the application.
+3.1.2 Non-Functional Requirements
+The system should also satisfy certain quality requirements:
+Usability: The interface should be simple and easy to understand.
+Performance: Common operations should be completed within a reasonable time.
+Reliability: Student information should be stored consistently.
+Maintainability: The application should have a structured codebase.
+Scalability: Additional modules should be capable of being added in future.
+Compatibility: The application should operate through a standard web browser.
+System Design:
+The system is designed using a three-layer concept consisting of the user interface, application/backend layer and database layer.
+Layer 1: User Interface- The user interacts with the system through web pages developed using:
+HTML
+CSS
+JavaScript
+Layer 2: Application Layer- The application logic is implemented using:
+Python
+Django
+Django receives requests from the frontend, processes the required operations and communicates with the database.
+Layer 3: Database Layer- The database stores the student information and allows the Django application to create, retrieve, update and delete records.
+The overall flow is:
+User → HTML/CSS/JavaScript → Django Backend → Database → Django Backend → Web Browser
+System working: The project follows Django's Model–View–Template (MVT) architecture, which is the standard architectural pattern used by Django applications. This architecture separates the application into three main components, each responsible for a distinct part of the system's functioning.
+Model: Defines and manages student data and handles interaction with the database.
+View: Handles incoming requests and contains the application's logic.
+Template: Provides the user interface and displays dynamic information to the user.
+Database: Stores student records; SQLite is being used as the database during development.
+The basic flow of a request within the system is as follows:
+When a user makes a request, it is directed by the URL configuration to the appropriate view. The view interacts with the model to retrieve or update data in the database, and then passes the resulting data to a template, which renders the final web page that is returned to the user.
+System Architecture Design:
+center6350User Web BrowserHTML, CSS, JSDjango BackendURLs → Views → Models → TemplatesDatabase SQLite/MySQL00User Web BrowserHTML, CSS, JSDjango BackendURLs → Views → Models → TemplatesDatabase SQLite/MySQL
+User
+Web Browser
+HTML, CSS, JS
+Django Backend
+URLs → Views → Models → Templates
+Database
+SQLite/MySQL
+User
+Web Browser
+HTML, CSS, JS
+Django Backend
+URLs → Views → Models → Templates
+Database
+SQLite/MySQL
+3018154102235HTTP Request00HTTP Request
+HTTP Request
+HTTP Request
+3065145128270Database QueryDatabase Query
+Database Query
+Database Query
+ER Diagram:
+Basic Workflow Diagram:
+System Modules:
+DFD Level 1
+The Student Management System is divided into several functional modules. Each module performs a specific task related to managing student information and helps make the overall system simple, organized, and efficient.
+1. Home Page Module
+The Home Page Module provides the main interface of the application. It allows users to navigate to different sections of the system. From the home page, users can access the student records, add new students, and access the Django administration panel.
+2. Student Registration Module
+The Student Registration Module is used to add new student records to the system. The user can enter details such as student ID, name, email, phone number, course, semester, and address. After submitting the form, the information is stored in the database.
+3. Student Records Module
+The Student Records Module displays the stored student information in an organized format. It allows users to view the available student records and access the available operations for each record.
+4. Student Update Module
+The Student Update Module allows existing student information to be modified. When a user selects a student for editing, the existing information is displayed in an editable form. After submitting the updated information, the changes are saved to the database.
+5. Student Deletion Module
+The Student Deletion Module allows users to remove an existing student record from the database. A confirmation page is displayed before deletion to help prevent accidental removal of records.
+6. Database Management Module
+The Database Management Module is responsible for storing and managing student information. The system uses Django's Object-Relational Mapping (ORM) to communicate with the SQLite database. Student records can be created, retrieved, updated, and deleted through the application.
+7. Administration Module
+The Administration Module is provided through the Django Admin interface. It allows an authorized administrator to manage student records directly through the administrative panel. This module provides a convenient interface for database management.
+8. Navigation Module
+The Navigation Module connects the different pages of the application through appropriate URLs and buttons. It allows users to move between the home page, student records, add student form, edit form, delete confirmation page, and administration panel.
+9. Data Validation Module
+The Data Validation Module helps ensure that the information entered by users follows the required format. Django model fields provide validation for different types of data, such as email addresses, numerical semester values, and unique student IDs.
+10. CRUD Operations Module
+The CRUD Operations Module represents the core functionality of the system. It supports Create, Read, Update, and Delete operations for student records. These operations allow the system to maintain student information efficiently throughout its lifecycle.
+Together, these modules provide the essential functionality required for managing student records. The modular structure also makes the system easier to maintain and provides a foundation for adding advanced features in the future.
+Development:
+The project is developed in a local development environment.
+Software
+Requirement
+Operating System
+Windows
+Frontend
+HTML, CSS, JavaScript
+Programming Language
+Python
+Framework
+Django
+Database
+SQLite
+Code Editor
+VS Code
+Web Browser
+Google Chrome / Microsoft Edge
+Hardware
+Requirement
+Processor
+Intel i3 or higher
+RAM
+Minimum 4 GB (8 GB recommended)
+Storage
+250 GB HDD / 120 GB SSD
+Display
+1366 × 768 resolution or higher
+Input Devices
+Keyboard and Mouse
+5.5 Testing: the system is tested to verify that the major functionalities work correctly.
+Testing focuses on:
+Data storage
+Data retrieval
+Data modification
+Data deletion
+Navigation
+Input validation
+Database interaction
+User interface functionality
+Each major operation is tested using appropriate input and its actual output is compared with the expected result
+Request-Response Process
+When a user interacts with the application, the following process takes place:
+The user opens the web application.
+The browser sends a request to the Django application.
+Django identifies the appropriate URL.
+The corresponding view processes the request.
+If database interaction is required, the view communicates with the model/database.
+The required information is retrieved or modified.
+Django generates an appropriate response.
+The response is displayed in the user's browser.
+HTML Form → HTTP POST Request → Django View → Model → Database → Response → Browser
+Implementation: This stage involves integrating the individual modules of the application into a single, functional Student Management System.
+Results
+Home Page of Student Management System
+Student Records Page
+Add Student Form
+Code Implementation
+FUTURE SCOPE
+The current Student Management System provides basic functionality for maintaining student records through operations such as adding, viewing, updating, and deleting student information. The system can be further enhanced in the following ways:
+1. User Authentication and Authorization
+A secure login system can be implemented to ensure that only authorized users can access the system. Different access levels can be provided to administrators, teachers, and students according to their responsibilities.
+2. Attendance Management
+An attendance module can be added to record and monitor student attendance. The system can automatically calculate attendance percentages and generate attendance reports.
+3. Marks and Academic Performance
+The system can be extended to store examination marks, grades, and academic performance. It can automatically calculate totals, percentages, grades, and overall performance.
+4. Advanced Search and Filtering
+Advanced search options can be introduced to quickly find student records using details such as student ID, name, course, or semester. Filtering can make large amounts of student data easier to manage.
+5. Report Generation
+The system can provide automatic generation of student, attendance, and academic reports. These reports can be exported into formats such as PDF or Excel for institutional use.
+6. Dashboard and Data Visualization
+A graphical dashboard can be developed to display useful statistics such as total students, students by course, and semester-wise student distribution. Charts and graphs can make data easier to understand.
+7. Improved Database and Security
+The current database can be upgraded from SQLite to MySQL or PostgreSQL for handling larger amounts of data. Additional security measures such as improved authentication, access control, validation, and regular backups can also be implemented.
+8. Cloud Deployment
+The application can be deployed on a cloud platform to allow authorized users to access the system from different locations. Cloud-based backup can also help protect important student records.
+9. Mobile Application
+A mobile application can be developed to provide students and teachers with convenient access to relevant information. Features such as viewing profiles, attendance, marks, and notifications can be included.
+10. AI and Data Analytics
+Artificial intelligence and data analytics can be incorporated in future versions to analyze academic data, identify performance trends, and provide useful insights that can support students and administrators.
+Overall, these enhancements can transform the current Student Management System into a more secure, scalable, and comprehensive platform for managing student information and academic activities.
+Conclusion
+The Student Management System is a web-based application developed to provide a simple, organized, and efficient way of managing student records digitally. The system is designed to reduce the dependency on traditional paper-based record keeping and make student information easier to store, access, modify, and maintain.
+The project has been developed using Python and the Django web framework, with HTML, CSS, and JavaScript used to create the user interface. SQLite is used as the database during development. The application follows Django's Model-View-Template (MVT) architecture, which provides a structured approach for separating data management, application logic, and presentation.
+The current system implements the core CRUD operations, including adding new student records, viewing existing records, updating student information, and deleting records when required. The system also provides database integration and an administrative interface through Django Admin. These functionalities demonstrate the practical implementation of web application development, database management, form handling, URL routing, request-response processing, and Django ORM.
+The developed system provides a basic but functional solution for managing student information. It improves the organization of records and reduces the time and effort required for common record-management tasks. The modular structure of the application also provides a foundation for adding more advanced features in the future.
+Overall, the project provided practical experience in Python, Django, database management, frontend development, CRUD operations, and web application architecture. The Student Management System demonstrates how these technologies can be combined to develop a useful and maintainable application for digital student record management.
+References
+Django Documentation, Django Web Framework Documentation, Django Software Foundation.
+Python Documentation, Python 3 Documentation, Python Software Foundation.
+W3Schools, HTML, CSS, JavaScript and Python Tutorials.
+MDN Web Docs, HTML, CSS and JavaScript Documentation.
+GeeksforGeeks, Python and Django Programming Tutorials.
+MySQL Documentation, MySQL Reference Manual.
+TutorialsPoint, Django and Python Programming Tutorial

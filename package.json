@@ -1,0 +1,11 @@
+{
+  "name": "motor-doctor-root",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix Motor-doctor-main run dev",
+    "build": "npm --prefix Motor-doctor-main run build",
+    "preview": "npm --prefix Motor-doctor-main run preview",
+    "lint": "npm --prefix Motor-doctor-main run lint"
+  }
+}
