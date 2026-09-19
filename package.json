@@ -3,9 +3,15 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "npm --prefix Motor-doctor-main run dev",
-    "build": "npm --prefix Motor-doctor-main run build",
-    "preview": "npm --prefix Motor-doctor-main run preview",
-    "lint": "npm --prefix Motor-doctor-main run lint"
+    "dev": "concurrently -k \"npm --prefix backend run dev\" \"npm --prefix frontend run dev\"",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev:backend": "npm --prefix backend run dev",
+    "build": "npm --prefix frontend install && npm --prefix frontend run build && npm --prefix backend install",
+    "build:frontend": "npm --prefix frontend run build",
+    "start": "node backend/server.js",
+    "install:all": "npm --prefix frontend install && npm --prefix backend install"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
   }
 }

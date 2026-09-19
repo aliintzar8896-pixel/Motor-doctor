@@ -1,0 +1,42 @@
+services:
+  # Option 1: Unified Production Web Service (Serves both API and Frontend SPA)
+  - type: web
+    name: motor-doctor-app
+    env: node
+    plan: free
+    buildCommand: npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: ALLOWED_ORIGINS
+        value: https://motordoctor.in,https://motor-doctor-app.onrender.com
+
+  # Option 2 (Alternative): Decoupled Backend Web Service
+  # - type: web
+  #   name: motor-doctor-backend
+  #   env: node
+  #   plan: free
+  #   rootDir: backend
+  #   buildCommand: npm install
+  #   startCommand: npm start
+  #   envVars:
+  #     - key: NODE_ENV
+  #       value: production
+  #     - key: PORT
+  #       value: 10000
+  #     - key: ALLOWED_ORIGINS
+  #       value: https://motor-doctor-frontend.onrender.com
+
+  # Option 2 (Alternative): Decoupled Frontend Static Site
+  # - type: static
+  #   name: motor-doctor-frontend
+  #   plan: free
+  #   rootDir: frontend
+  #   buildCommand: npm install && npm run build
+  #   staticPublishPath: ./dist
+  #   envVars:
+  #     - key: VITE_API_URL
+  #       value: https://motor-doctor-backend.onrender.com
