@@ -8,6 +8,8 @@ export const contactService = {
     subject?: string;
     message: string;
   }): Promise<any> {
-    return api.post('/api/contact', contactData);
+    const res = await api.post<any>('/api/contact', contactData);
+    return res?.data || res;
   },
 };
+

@@ -81,13 +81,21 @@ app.use(errorHandler);
 
 // Start server
 const PORT = config.PORT;
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log('====================================================');
   console.log(`🚀 Motor Doctor Server running on port ${PORT}`);
   console.log(`🌍 Environment: ${config.NODE_ENV}`);
   console.log('🌐 Configured CORS Whitelist:');
   config.ALLOWED_ORIGINS.forEach(origin => console.log(`   - ${origin}`));
   console.log('====================================================');
+});
+
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.warn(`⚠️ Port ${PORT} is already in use by another process. Please close it or change PORT in .env`);
+  } else {
+    console.error('Server error:', err);
+  }
 });
 
 export default app;

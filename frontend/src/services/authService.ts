@@ -3,7 +3,14 @@ import { User, UserRole } from '../types';
 
 export const authService = {
   async login(emailOrPhone: string, role: UserRole = 'driver'): Promise<{ user: User; token: string }> {
-    return api.post('/api/auth/login', { emailOrPhone, role });
+    const res = await api.post<any>('/api/auth/login', { emailOrPhone, role });
+    if (res?.token) {
+      localStorage.setItem('md_auth_token', res.token);
+    }
+    return {
+      user: res?.user || res?.data,
+      token: res?.token,
+    };
   },
 
   async register(userData: {
@@ -14,18 +21,28 @@ export const authService = {
     vehicleModel?: string;
     vehicleNumber?: string;
   }): Promise<{ user: User; token: string }> {
-    return api.post('/api/auth/register', userData);
+    const res = await api.post<any>('/api/auth/register', userData);
+    if (res?.token) {
+      localStorage.setItem('md_auth_token', res.token);
+    }
+    return {
+      user: res?.user || res?.data,
+      token: res?.token,
+    };
   },
 
   async getCurrentUser(): Promise<User> {
-    return api.get('/api/auth/me');
+    const res = await api.get<any>('/api/auth/me');
+    return res?.user || res?.data || res;
   },
 
   async updateProfile(data: Partial<User>): Promise<User> {
-    return api.put('/api/auth/profile', data);
+    const res = await api.put<any>('/api/auth/profile', data);
+    return res?.user || res?.data || res;
   },
 
   async logout(): Promise<void> {
     localStorage.removeItem('md_auth_token');
   },
 };
+

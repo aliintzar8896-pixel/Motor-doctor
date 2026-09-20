@@ -3,24 +3,32 @@ import { Mechanic } from '../types';
 
 export const mechanicService = {
   async getAllMechanics(): Promise<Mechanic[]> {
-    return api.get('/api/mechanics');
+    const res = await api.get<any>('/api/mechanics');
+    if (Array.isArray(res)) return res;
+    if (Array.isArray(res?.data)) return res.data;
+    return [];
   },
 
   async getMechanicById(id: string): Promise<Mechanic> {
-    return api.get(`/api/mechanics/${id}`);
+    const res = await api.get<any>(`/api/mechanics/${id}`);
+    return res?.data || res;
   },
 
   async toggleOnlineStatus(id: string): Promise<Mechanic> {
-    return api.patch(`/api/mechanics/${id}/toggle-online`);
+    const res = await api.patch<any>(`/api/mechanics/${id}/toggle-online`);
+    return res?.data || res;
   },
 
   async verifyMechanic(id: string, isVerified: boolean): Promise<Mechanic> {
-    return api.patch(`/api/mechanics/${id}/verify`, { isVerified });
+    const res = await api.patch<any>(`/api/mechanics/${id}/verify`, { isVerified });
+    return res?.data || res;
   },
 
   async registerMechanic(
     data: Omit<Mechanic, 'id' | 'rating' | 'reviewsCount' | 'distanceKm' | 'etaMinutes' | 'isVerified'>
   ): Promise<Mechanic> {
-    return api.post('/api/mechanics', data);
+    const res = await api.post<any>('/api/mechanics', data);
+    return res?.data || res;
   },
 };
+

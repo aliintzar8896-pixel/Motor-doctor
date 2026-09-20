@@ -3,7 +3,8 @@ import { BillItem } from '../types';
 
 export const billService = {
   async analyzeBill(items: BillItem[]): Promise<any> {
-    return api.post('/api/bill/analyze', { items });
+    const res = await api.post<any>('/api/bill/analyze', { items });
+    return res?.data || res;
   },
 
   async requestConsultation(consultationData: {
@@ -13,6 +14,8 @@ export const billService = {
     vehicleModel?: string;
     billImage?: string;
   }): Promise<any> {
-    return api.post('/api/bill/consultation', consultationData);
+    const res = await api.post<any>('/api/bill/consultation', consultationData);
+    return res?.data || res;
   },
 };
+

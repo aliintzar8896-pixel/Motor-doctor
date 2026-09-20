@@ -3,19 +3,25 @@ import { ServiceRequest, RequestStatus, PaymentMethod, PaymentStatus } from '../
 
 export const requestService = {
   async getRequests(): Promise<ServiceRequest[]> {
-    return api.get('/api/requests');
+    const res = await api.get<any>('/api/requests');
+    if (Array.isArray(res)) return res;
+    if (Array.isArray(res?.data)) return res.data;
+    return [];
   },
 
   async getRequestById(id: string): Promise<ServiceRequest> {
-    return api.get(`/api/requests/${id}`);
+    const res = await api.get<any>(`/api/requests/${id}`);
+    return res?.data || res;
   },
 
   async createRequest(requestData: any): Promise<ServiceRequest> {
-    return api.post('/api/requests', requestData);
+    const res = await api.post<any>('/api/requests', requestData);
+    return res?.data || res;
   },
 
   async updateStatus(id: string, status: RequestStatus): Promise<ServiceRequest> {
-    return api.patch(`/api/requests/${id}/status`, { status });
+    const res = await api.patch<any>(`/api/requests/${id}/status`, { status });
+    return res?.data || res;
   },
 
   async updatePayment(
@@ -24,10 +30,13 @@ export const requestService = {
     status: PaymentStatus,
     refId?: string
   ): Promise<ServiceRequest> {
-    return api.patch(`/api/requests/${id}/payment`, { method, status, refId });
+    const res = await api.patch<any>(`/api/requests/${id}/payment`, { method, status, refId });
+    return res?.data || res;
   },
 
   async cancelRequest(id: string): Promise<ServiceRequest> {
-    return api.delete(`/api/requests/${id}`);
+    const res = await api.delete<any>(`/api/requests/${id}`);
+    return res?.data || res;
   },
 };
+
