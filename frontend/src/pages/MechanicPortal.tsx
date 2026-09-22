@@ -44,6 +44,8 @@ const DEFAULT_MECHANIC: Mechanic = {
   rating: 4.9,
   reviewsCount: 142,
   baseCharge: 350,
+  experienceYears: 8,
+  towingAvailable: true,
   services: ['puncture', 'battery', 'engine', 'towing'] as ServiceSpecialty[],
   lat: 28.8386,
   lng: 78.7733,
