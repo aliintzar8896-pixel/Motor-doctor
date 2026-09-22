@@ -1,26 +1,56 @@
 import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
-import { ServiceSpecialty, RequestStatus } from '@/types';
+import { ServiceSpecialty, Mechanic } from '@/types';
 import { formatINR } from '@/utils/utils';
 import { soundFx } from '@/utils/audioAlert';
 import { 
   Wrench, 
   Power, 
-  Bell, 
   MapPin, 
   PhoneCall, 
   Navigation, 
   CheckCircle, 
   Clock, 
-  DollarSign, 
   Star, 
   Truck, 
   ShieldCheck, 
-  PlusCircle, 
   Radio, 
-  Car 
+  Car,
+  AlertTriangle,
+  History,
+  IndianRupee,
+  Calendar
 } from 'lucide-react';
 import { toast } from 'sonner';
+
+const ALL_SERVICES: { key: ServiceSpecialty; label: string }[] = [
+  { key: 'puncture', label: 'Tyre & Puncture' },
+  { key: 'battery', label: 'Battery Jumpstart' },
+  { key: 'engine', label: 'Engine & Overheating' },
+  { key: 'towing', label: 'Towing & Recovery' },
+  { key: 'brake', label: 'Brake / Clutch' },
+  { key: 'fuel', label: 'Fuel Delivery' },
+  { key: 'electrical', label: 'Electrical / EFI' },
+];
+
+const DEFAULT_MECHANIC: Mechanic = {
+  id: 'mech-101',
+  name: 'Mohammad Tariq',
+  shopName: 'Tariq Auto Care & 24x7 Recovery',
+  phone: '+91 98371 45820',
+  address: 'NH-24 Bypass, Near TMU Moradabad',
+  city: 'Moradabad',
+  isAvailable: true,
+  rating: 4.9,
+  reviewsCount: 142,
+  baseCharge: 350,
+  services: ['puncture', 'battery', 'engine', 'towing'] as ServiceSpecialty[],
+  lat: 28.8386,
+  lng: 78.7733,
+  distanceKm: 2.1,
+  etaMinutes: 15,
+  isVerified: true
+};
 
 export const MechanicPortal: React.FC = () => {
   const { 
@@ -30,41 +60,41 @@ export const MechanicPortal: React.FC = () => {
     updateRequestStatus, 
     toggleMechanicOnline, 
     registerMechanic,
-    switchRole
   } = useApp();
 
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'register'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'history' | 'register'>('dashboard');
 
-  // Find mechanic record corresponding to current mechanic or first one with safe fallback
-  const defaultMechanic: Mechanic = {
-    id: 'mech-101',
-    name: 'Mohammad Tariq',
-    shopName: 'Tariq Auto Care & 24x7 Recovery',
-    phone: '+91 98371 45820',
-    address: 'NH-24 Bypass, Near TMU Moradabad',
-    city: 'Moradabad',
-    isAvailable: true,
-    rating: 4.9,
-    reviewsCount: 142,
-    baseCharge: 350,
-    services: ['puncture', 'battery', 'engine', 'towing'] as ServiceSpecialty[],
-    lat: 28.8386,
-    lng: 78.7733,
-    distanceKm: 2.1,
-    etaMinutes: 15,
-    isVerified: true
-  };
-  const myMechanicRecord = mechanics.find(m => m.id === 'mech-101') || mechanics[0] || defaultMechanic;
+  // Find mechanic record corresponding to current user or fallback
+  const myMechanicRecord: Mechanic = 
+    mechanics.find(m => m.id === currentUser?.id) || 
+    mechanics.find(m => m.phone === currentUser?.phone) || 
+    mechanics.find(m => m.id === 'mech-101') || 
+    mechanics[0] || 
+    DEFAULT_MECHANIC;
+
   const isOnline = myMechanicRecord.isAvailable;
 
-  // Requests assigned to this mechanic or pending highway requests
-  const incomingRequests = serviceRequests.filter(r => 
-    r.status === 'pending' || (r.mechanicId === myMechanicRecord.id && r.status !== 'cancelled')
+  // Active Job in progress (assigned to this mechanic)
+  const activeJob = serviceRequests.find(r => 
+    r.mechanicId === myMechanicRecord.id && 
+    ['accepted', 'en_route', 'arrived', 'in_progress'].includes(r.status)
   );
 
-  const activeJob = serviceRequests.find(r => 
-    r.mechanicId === myMechanicRecord.id && ['accepted', 'en_route', 'arrived', 'in_progress'].includes(r.status)
+  // Incoming pending requests (open for dispatch nearby)
+  const incomingPendingRequests = serviceRequests.filter(r => 
+    r.status === 'pending'
   );
+
+  // Completed jobs history for this mechanic
+  const completedJobs = serviceRequests.filter(r => 
+    r.mechanicId === myMechanicRecord.id && r.status === 'completed'
+  );
+
+  // Dynamic statistics
+  const dynamicCompletedCount = completedJobs.length > 0 ? completedJobs.length : 4;
+  const dynamicEarnings = completedJobs.length > 0 
+    ? completedJobs.reduce((sum, j) => sum + (j.finalCost || j.estimatedCost || 0), 0)
+    : 2450;
 
   // Mechanic Registration Form State
   const [shopName, setShopName] = useState('');
@@ -85,57 +115,75 @@ export const MechanicPortal: React.FC = () => {
     );
   };
 
+  const handleAcceptCall = (reqId: string) => {
+    if (!isOnline) {
+      toast.error('You are currently OFFLINE. Please turn online first to accept calls!');
+      return;
+    }
+    updateRequestStatus(reqId, 'accepted');
+    soundFx.playDispatchChime();
+    toast.success('Emergency call accepted! Please review vehicle details and prepare dispatch.');
+  };
+
   const handleRegisterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!shopName || !leadName || !phone) return;
+    if (!shopName.trim() || !leadName.trim() || !phone.trim()) {
+      toast.error('Please fill in Workshop Name, Lead Mechanic Name, and Phone Number');
+      return;
+    }
+
+    if (selectedServices.length === 0) {
+      toast.error('Please select at least one service specialty');
+      return;
+    }
 
     registerMechanic({
-      name: leadName,
-      shopName,
-      phone,
+      name: leadName.trim(),
+      shopName: shopName.trim(),
+      phone: phone.trim(),
       lat: 28.8400 + (Math.random() * 0.02 - 0.01),
       lng: 78.7700 + (Math.random() * 0.02 - 0.01),
-      address,
-      city,
+      address: address.trim() || 'NH-24 Corridor',
+      city: city.trim() || 'Moradabad',
       services: selectedServices,
       isAvailable: true,
-      baseCharge: Number(baseCharge),
-      experienceYears: Number(experienceYears),
+      baseCharge: Number(baseCharge) || 350,
+      experienceYears: Number(experienceYears) || 5,
       towingAvailable
     });
 
+    soundFx.playSuccessTone();
+    toast.success(`Workshop "${shopName}" registered successfully!`);
+    setShopName('');
+    setLeadName('');
+    setPhone('');
+    setAddress('');
     setActiveTab('dashboard');
   };
-
-  const allServices: { key: ServiceSpecialty; label: string }[] = [
-    { key: 'puncture', label: 'Tyre & Puncture' },
-    { key: 'battery', label: 'Battery Jumpstart' },
-    { key: 'engine', label: 'Engine & Overheating' },
-    { key: 'towing', label: 'Towing & Recovery' },
-    { key: 'brake', label: 'Brake / Clutch' },
-    { key: 'fuel', label: 'Fuel Delivery' },
-    { key: 'electrical', label: 'Electrical / EFI' },
-  ];
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       
-      {/* Top Header */}
+      {/* Top Header Card */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-6">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-amber-400">
+            <span className="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1">
+              <Wrench className="w-3.5 h-3.5" />
               Mechanic Partner Network
             </span>
-            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30">
-              Verified Partner
-            </span>
+            {myMechanicRecord.isVerified && (
+              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30 flex items-center gap-1">
+                <ShieldCheck className="w-3 h-3" />
+                Verified Partner
+              </span>
+            )}
           </div>
-          <h1 className="text-3xl font-black text-white mt-1">
+          <h1 className="text-2xl sm:text-3xl font-black text-white mt-1">
             {myMechanicRecord.shopName}
           </h1>
           <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
-            Operator: <strong className="text-slate-200">{myMechanicRecord.name}</strong> • Moradabad Highway Sector
+            Operator: <strong className="text-slate-200">{myMechanicRecord.name}</strong> • Phone: <span className="font-mono text-slate-300">{myMechanicRecord.phone}</span> • {myMechanicRecord.city} Highway Sector
           </p>
         </div>
 
@@ -145,7 +193,7 @@ export const MechanicPortal: React.FC = () => {
             onClick={() => toggleMechanicOnline(myMechanicRecord.id)}
             className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs shadow-lg transition-all ${
               isOnline
-                ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/30'
+                ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/30 ring-2 ring-emerald-400/50'
                 : 'bg-slate-800 text-slate-400 hover:text-white border border-slate-700'
             }`}
           >
@@ -155,27 +203,51 @@ export const MechanicPortal: React.FC = () => {
         </div>
       </div>
 
-      {/* Tabs */}
+      {/* Offline Alert Banner */}
+      {!isOnline && (
+        <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center gap-3 text-amber-300 text-xs sm:text-sm">
+          <AlertTriangle className="w-5 h-5 shrink-0 text-amber-400" />
+          <div>
+            <strong>You are currently Offline:</strong> You will not receive audio alerts or new emergency dispatch calls until you switch your status to Online.
+          </div>
+        </div>
+      )}
+
+      {/* Navigation Tabs */}
       <div className="flex items-center gap-3 border-b border-slate-800 pb-2">
         <button
           onClick={() => setActiveTab('dashboard')}
-          className={`px-4 py-2 rounded-xl text-xs font-extrabold transition-all ${
+          className={`px-4 py-2 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1.5 ${
             activeTab === 'dashboard'
               ? 'bg-amber-500 text-slate-950 shadow-md'
               : 'text-slate-400 hover:text-white'
           }`}
         >
-          Live Dispatch & Jobs ({incomingRequests.length})
+          <Radio className="w-3.5 h-3.5" />
+          Live Dispatch & Queue ({incomingPendingRequests.length})
+        </button>
+
+        <button
+          onClick={() => setActiveTab('history')}
+          className={`px-4 py-2 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1.5 ${
+            activeTab === 'history'
+              ? 'bg-amber-500 text-slate-950 shadow-md'
+              : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          <History className="w-3.5 h-3.5" />
+          Job History ({completedJobs.length})
         </button>
 
         <button
           onClick={() => setActiveTab('register')}
-          className={`px-4 py-2 rounded-xl text-xs font-extrabold transition-all ${
+          className={`px-4 py-2 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1.5 ${
             activeTab === 'register'
               ? 'bg-amber-500 text-slate-950 shadow-md'
               : 'text-slate-400 hover:text-white'
           }`}
         >
+          <Wrench className="w-3.5 h-3.5" />
           Register New Mechanic / Workshop
         </button>
       </div>
@@ -186,28 +258,39 @@ export const MechanicPortal: React.FC = () => {
           {/* Daily Quick Stats */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div className="glass-card p-4 rounded-2xl border border-slate-800">
-              <span className="text-[11px] text-slate-400 font-semibold uppercase">Today's Jobs</span>
-              <div className="text-2xl font-black text-white mt-1">4 Completed</div>
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] text-slate-400 font-semibold uppercase">Today's Jobs</span>
+                <CheckCircle className="w-4 h-4 text-emerald-400" />
+              </div>
+              <div className="text-2xl font-black text-white mt-1">{dynamicCompletedCount} Completed</div>
               <span className="text-[11px] text-emerald-400 font-semibold mt-1 block">100% resolution</span>
             </div>
 
             <div className="glass-card p-4 rounded-2xl border border-slate-800">
-              <span className="text-[11px] text-slate-400 font-semibold uppercase">Daily Payout</span>
-              <div className="text-2xl font-black text-emerald-400 mt-1">₹2,450</div>
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] text-slate-400 font-semibold uppercase">Daily Payout</span>
+                <IndianRupee className="w-4 h-4 text-emerald-400" />
+              </div>
+              <div className="text-2xl font-black text-emerald-400 mt-1">{formatINR(dynamicEarnings)}</div>
               <span className="text-[11px] text-slate-400 mt-1 block">Direct UPI & Cash</span>
             </div>
 
             <div className="glass-card p-4 rounded-2xl border border-slate-800">
-              <span className="text-[11px] text-slate-400 font-semibold uppercase">Driver Rating</span>
-              <div className="text-2xl font-black text-amber-400 mt-1 flex items-center gap-1">
-                <Star className="w-5 h-5 fill-current" />
-                <span>4.9</span>
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] text-slate-400 font-semibold uppercase">Driver Rating</span>
+                <Star className="w-4 h-4 text-amber-400 fill-current" />
               </div>
-              <span className="text-[11px] text-slate-400 mt-1 block">Based on 142 reviews</span>
+              <div className="text-2xl font-black text-amber-400 mt-1 flex items-center gap-1">
+                <span>{myMechanicRecord.rating.toFixed(1)}</span>
+              </div>
+              <span className="text-[11px] text-slate-400 mt-1 block">Based on {myMechanicRecord.reviewsCount} reviews</span>
             </div>
 
             <div className="glass-card p-4 rounded-2xl border border-slate-800">
-              <span className="text-[11px] text-slate-400 font-semibold uppercase">Network Status</span>
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] text-slate-400 font-semibold uppercase">Network Status</span>
+                <Radio className={`w-4 h-4 ${isOnline ? 'text-emerald-400 animate-pulse' : 'text-slate-500'}`} />
+              </div>
               <div className="text-base font-bold text-white mt-2 flex items-center gap-1.5">
                 <span className={`w-2.5 h-2.5 rounded-full ${isOnline ? 'bg-emerald-500 animate-pulse' : 'bg-slate-500'}`} />
                 <span>{isOnline ? 'Active Dispatch' : 'Unavailable'}</span>
@@ -218,14 +301,14 @@ export const MechanicPortal: React.FC = () => {
 
           {/* Active Job in Progress (if any) */}
           {activeJob && (
-            <div className="rounded-3xl glass-panel border-2 border-amber-500/50 p-6 sm:p-8 shadow-2xl relative overflow-hidden">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+            <div className="rounded-3xl glass-panel border-2 border-amber-500/50 p-6 sm:p-8 shadow-2xl relative overflow-hidden bg-slate-900/90">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-800 pb-4 gap-2">
                 <div className="flex items-center gap-2">
-                  <span className="w-3 h-3 rounded-full bg-amber-400 animate-ping" />
+                  <span className="w-3 h-3 rounded-full bg-amber-400 animate-ping shrink-0" />
                   <h3 className="text-lg font-black text-white">
                     Active Emergency Job: {activeJob.id}
                   </h3>
-                  <span className="text-xs font-bold uppercase px-2 py-0.5 rounded bg-amber-500/20 text-amber-400">
+                  <span className="text-xs font-bold uppercase px-2.5 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">
                     Status: {activeJob.status.replace('_', ' ')}
                   </span>
                 </div>
@@ -236,46 +319,76 @@ export const MechanicPortal: React.FC = () => {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 my-6">
-                <div>
-                  <div className="text-[11px] text-slate-400 font-semibold uppercase">Vehicle Details</div>
+                <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800">
+                  <div className="text-[11px] text-slate-400 font-semibold uppercase flex items-center gap-1">
+                    <Car className="w-3.5 h-3.5 text-amber-400" />
+                    Vehicle Details
+                  </div>
                   <div className="text-base font-bold text-white mt-1">{activeJob.vehicleModel}</div>
                   <div className="text-xs text-amber-400 font-mono mt-0.5">{activeJob.vehicleNumber}</div>
                   <div className="text-xs text-slate-300 mt-2">
-                    Issue: <strong className="capitalize">{activeJob.issueType}</strong>
+                    Issue: <strong className="capitalize text-amber-300">{activeJob.issueType}</strong>
                   </div>
-                </div>
-
-                <div>
-                  <div className="text-[11px] text-slate-400 font-semibold uppercase">Breakdown GPS Spot</div>
-                  <div className="text-xs text-slate-200 mt-1 leading-relaxed">{activeJob.locationName}</div>
-                  {activeJob.landmark && (
-                    <div className="text-xs text-amber-400 mt-1">Landmark: {activeJob.landmark}</div>
+                  {activeJob.description && (
+                    <p className="text-xs text-slate-400 mt-1 italic">"{activeJob.description}"</p>
                   )}
                 </div>
 
-                <div className="flex flex-col justify-between">
+                <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800">
+                  <div className="text-[11px] text-slate-400 font-semibold uppercase flex items-center gap-1">
+                    <MapPin className="w-3.5 h-3.5 text-red-400" />
+                    Breakdown GPS Spot
+                  </div>
+                  <div className="text-xs text-slate-200 mt-1 leading-relaxed font-medium">{activeJob.locationName}</div>
+                  {activeJob.landmark && (
+                    <div className="text-xs text-amber-400 mt-1">Landmark: {activeJob.landmark}</div>
+                  )}
+                  {activeJob.lat && activeJob.lng && (
+                    <div className="text-[11px] text-slate-400 font-mono mt-1">
+                      Coordinates: {activeJob.lat.toFixed(4)}°N, {activeJob.lng.toFixed(4)}°E
+                    </div>
+                  )}
+                </div>
+
+                <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800 flex flex-col justify-between">
                   <div>
-                    <div className="text-[11px] text-slate-400 font-semibold uppercase">Client OTP</div>
-                    <div className="text-xl font-black text-emerald-400 font-mono mt-0.5">
+                    <div className="text-[11px] text-slate-400 font-semibold uppercase">Client Verification OTP</div>
+                    <div className="text-2xl font-black text-emerald-400 font-mono mt-0.5 tracking-wider">
                       {activeJob.otp}
                     </div>
+                    <span className="text-[10px] text-slate-400">Ask driver for OTP upon arrival</span>
                   </div>
 
-                  <div className="text-xs text-slate-400 mt-2">
+                  <div className="text-xs text-slate-400 mt-3 pt-3 border-t border-slate-800/80">
                     Payable: <strong className="text-white text-base">{formatINR(activeJob.estimatedCost)}</strong>
+                    <span className="block text-[11px] text-slate-400 capitalize">Method: {activeJob.paymentMethod?.replace('_', ' ') || 'Cash on Delivery'}</span>
                   </div>
                 </div>
               </div>
 
               {/* Mechanic Action Progression Controls */}
               <div className="pt-4 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3">
-                <a
-                  href={`tel:${activeJob.userPhone}`}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold transition-colors"
-                >
-                  <PhoneCall className="w-4 h-4 text-emerald-400" />
-                  <span>Call Stranded Driver</span>
-                </a>
+                <div className="flex flex-wrap items-center gap-2">
+                  <a
+                    href={`tel:${activeJob.userPhone.replace(/\s+/g, '')}`}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold transition-colors"
+                  >
+                    <PhoneCall className="w-4 h-4 text-emerald-400" />
+                    <span>Call Driver ({activeJob.userPhone})</span>
+                  </a>
+
+                  {activeJob.lat && activeJob.lng && (
+                    <a
+                      href={`https://www.google.com/maps/dir/?api=1&destination=${activeJob.lat},${activeJob.lng}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600/20 border border-blue-500/40 hover:bg-blue-600/30 text-blue-300 text-xs font-bold transition-colors"
+                    >
+                      <Navigation className="w-4 h-4 text-blue-400" />
+                      <span>GPS Directions (Google Maps)</span>
+                    </a>
+                  )}
+                </div>
 
                 <div className="flex items-center gap-2">
                   {activeJob.status === 'accepted' && (
@@ -322,76 +435,172 @@ export const MechanicPortal: React.FC = () => {
           <div className="rounded-3xl glass-panel border border-slate-800 p-6 sm:p-8 shadow-2xl">
             <div className="flex items-center justify-between border-b border-slate-800 pb-4 mb-4">
               <div>
-                <h3 className="text-lg font-black text-white">Emergency Request Queue</h3>
+                <h3 className="text-lg font-black text-white flex items-center gap-2">
+                  <Radio className="w-4 h-4 text-amber-400" />
+                  Emergency Request Queue
+                </h3>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  Live roadside calls within your 10 km service radius
+                  Live roadside calls waiting for mechanic dispatch within your sector
                 </p>
               </div>
-              <span className="text-xs font-bold text-amber-400 bg-amber-500/20 px-2.5 py-1 rounded-full">
-                {incomingRequests.length} Requests Active
+              <span className="text-xs font-bold text-amber-400 bg-amber-500/20 px-2.5 py-1 rounded-full border border-amber-500/30">
+                {incomingPendingRequests.length} Pending Calls
               </span>
             </div>
 
-            <div className="space-y-4">
-              {incomingRequests.map((req) => (
-                <div 
-                  key={req.id}
-                  className="p-5 rounded-2xl bg-slate-900/90 border border-slate-800 hover:border-slate-700 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 transition-all"
-                >
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-extrabold text-white text-sm">
-                        {req.vehicleModel} ({req.vehicleNumber})
-                      </span>
-                      <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded ${
-                        req.urgency === 'sos' 
-                          ? 'bg-red-500 text-white animate-pulse' 
-                          : 'bg-amber-500/20 text-amber-400'
-                      }`}>
-                        {req.urgency.toUpperCase()}
-                      </span>
+            {incomingPendingRequests.length === 0 ? (
+              <div className="text-center py-12 text-slate-400 space-y-2">
+                <CheckCircle className="w-8 h-8 text-emerald-400 mx-auto" />
+                <div className="text-sm font-bold text-slate-300">All Highway Calls Cleared!</div>
+                <p className="text-xs text-slate-500">
+                  New emergency breakdown notifications will appear here automatically.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {incomingPendingRequests.map((req) => (
+                  <div 
+                    key={req.id}
+                    className="p-5 rounded-2xl bg-slate-900/90 border border-slate-800 hover:border-slate-700 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 transition-all"
+                  >
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-extrabold text-white text-sm">
+                          {req.vehicleModel} ({req.vehicleNumber})
+                        </span>
+                        <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded ${
+                          req.urgency === 'sos' 
+                            ? 'bg-red-500 text-white animate-pulse' 
+                            : 'bg-amber-500/20 text-amber-400'
+                        }`}>
+                          {req.urgency.toUpperCase()}
+                        </span>
+                      </div>
+
+                      <p className="text-xs text-slate-300">
+                        Issue: <strong className="text-white capitalize">{req.issueType}</strong> • {req.description || 'Highway breakdown'}
+                      </p>
+
+                      <div className="flex items-center gap-1.5 text-xs text-slate-400">
+                        <MapPin className="w-3.5 h-3.5 text-red-500 shrink-0" />
+                        <span>{req.locationName}</span>
+                      </div>
                     </div>
 
-                    <p className="text-xs text-slate-300">
-                      Issue: <strong className="text-white capitalize">{req.issueType}</strong> • {req.description}
-                    </p>
+                    <div className="flex items-center gap-3 self-end md:self-auto">
+                      <div className="text-right">
+                        <div className="text-sm font-black text-amber-400">{formatINR(req.estimatedCost)}</div>
+                        <div className="text-[10px] text-slate-400">Estimated Payout</div>
+                      </div>
 
-                    <div className="flex items-center gap-1.5 text-xs text-slate-400">
-                      <MapPin className="w-3.5 h-3.5 text-red-500 shrink-0" />
-                      <span>{req.locationName}</span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3 self-end md:self-auto">
-                    <div className="text-right">
-                      <div className="text-sm font-black text-amber-400">{formatINR(req.estimatedCost)}</div>
-                      <div className="text-[10px] text-slate-400">Estimated Payout</div>
-                    </div>
-
-                    {req.status === 'pending' ? (
                       <button
-                        onClick={() => updateRequestStatus(req.id, 'accepted')}
+                        onClick={() => handleAcceptCall(req.id)}
                         className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-md transition-colors"
                       >
                         Accept Call
                       </button>
-                    ) : (
-                      <span className="px-3 py-1.5 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold capitalize">
-                        {req.status.replace('_', ' ')}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+        </div>
+      ) : activeTab === 'history' ? (
+        /* Job History Section */
+        <div className="rounded-3xl glass-panel border border-slate-800 p-6 sm:p-8 shadow-2xl space-y-6">
+          <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+            <div>
+              <h3 className="text-xl font-black text-white flex items-center gap-2">
+                <History className="w-5 h-5 text-amber-400" />
+                Completed Jobs History
+              </h3>
+              <p className="text-xs text-slate-400 mt-1">
+                Log of successfully resolved breakdown assistance & customer invoices
+              </p>
+            </div>
+            <div className="text-right">
+              <span className="text-xs font-bold text-emerald-400 bg-emerald-500/20 px-3 py-1 rounded-full border border-emerald-500/30">
+                Total Earned: {formatINR(dynamicEarnings)}
+              </span>
+            </div>
+          </div>
+
+          {completedJobs.length === 0 ? (
+            <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-3">
+              <div className="flex items-center gap-2 text-xs font-bold text-slate-300">
+                <Clock className="w-4 h-4 text-slate-400" />
+                Previous Sample Resolved Jobs (Archived):
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div className="p-3 rounded-xl bg-slate-950 border border-slate-800/80">
+                  <div className="flex justify-between font-bold text-white">
+                    <span>Hyundai Creta (UP 21 BK 4092)</span>
+                    <span className="text-emerald-400">₹649</span>
+                  </div>
+                  <p className="text-slate-400 mt-1">Dead battery jumpstart near TMU Moradabad</p>
+                  <span className="text-[10px] text-slate-500 mt-1 block">Resolved in 18 mins • Paid via UPI</span>
+                </div>
+                <div className="p-3 rounded-xl bg-slate-950 border border-slate-800/80">
+                  <div className="flex justify-between font-bold text-white">
+                    <span>Maruti Swift (UP 21 AX 1024)</span>
+                    <span className="text-emerald-400">₹450</span>
+                  </div>
+                  <p className="text-slate-400 mt-1">Tubeless tyre puncture repair at NH-24 Bypass</p>
+                  <span className="text-[10px] text-slate-500 mt-1 block">Resolved in 25 mins • Paid in Cash</span>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {completedJobs.map(job => (
+                <div 
+                  key={job.id} 
+                  className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                >
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-black text-white text-sm">
+                        {job.vehicleModel} ({job.vehicleNumber})
                       </span>
-                    )}
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                        Completed ✓
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-300">
+                      Issue: <strong className="capitalize text-white">{job.issueType}</strong> • Client: {job.userName}
+                    </p>
+                    <div className="text-[11px] text-slate-400 flex items-center gap-2">
+                      <MapPin className="w-3 h-3 text-red-400" />
+                      <span>{job.locationName}</span>
+                      <span>•</span>
+                      <Calendar className="w-3 h-3 text-slate-500" />
+                      <span>{new Date(job.updatedAt).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+
+                  <div className="text-right">
+                    <div className="text-base font-black text-emerald-400">
+                      {formatINR(job.finalCost || job.estimatedCost)}
+                    </div>
+                    <span className="text-[10px] text-slate-400 capitalize">
+                      {job.paymentMethod?.replace('_', ' ') || 'Cash'}
+                    </span>
                   </div>
                 </div>
               ))}
             </div>
-          </div>
-
+          )}
         </div>
       ) : (
         /* Mechanic Registration Onboarding Form */
         <div className="max-w-2xl mx-auto rounded-3xl glass-panel border border-slate-700/80 p-6 sm:p-10 shadow-2xl">
           <div className="border-b border-slate-800 pb-4 mb-6">
-            <h3 className="text-xl font-black text-white">Join Motor Doctor Partner Network</h3>
+            <h3 className="text-xl font-black text-white flex items-center gap-2">
+              <Wrench className="w-5 h-5 text-amber-400" />
+              Join Motor Doctor Partner Network
+            </h3>
             <p className="text-xs text-slate-400 mt-1">
               Start receiving highway breakdown calls directly on your phone with zero commission!
             </p>
@@ -399,7 +608,7 @@ export const MechanicPortal: React.FC = () => {
 
           <form onSubmit={handleRegisterSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">Workshop / Mobile Unit Name</label>
+              <label className="block text-xs font-medium text-slate-300 mb-1">Workshop / Mobile Unit Name *</label>
               <input
                 type="text"
                 required
@@ -412,7 +621,7 @@ export const MechanicPortal: React.FC = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Lead Mechanic Name</label>
+                <label className="block text-xs font-medium text-slate-300 mb-1">Lead Mechanic Name *</label>
                 <input
                   type="text"
                   required
@@ -424,7 +633,7 @@ export const MechanicPortal: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Phone / WhatsApp Number</label>
+                <label className="block text-xs font-medium text-slate-300 mb-1">Phone / WhatsApp Number *</label>
                 <input
                   type="text"
                   required
@@ -440,7 +649,6 @@ export const MechanicPortal: React.FC = () => {
               <label className="block text-xs font-medium text-slate-300 mb-1">Workshop Address & Highway Landmark</label>
               <input
                 type="text"
-                required
                 value={address}
                 onChange={e => setAddress(e.target.value)}
                 placeholder="e.g. NH-24 Bypass, Near TMU Campus Gate 2"
@@ -483,23 +691,24 @@ export const MechanicPortal: React.FC = () => {
             {/* Services Checkboxes */}
             <div>
               <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
-                Services You Can Handle On Highway
+                Services You Can Handle On Highway *
               </label>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {allServices.map(s => {
+                {ALL_SERVICES.map(s => {
                   const isChecked = selectedServices.includes(s.key);
                   return (
                     <button
                       type="button"
                       key={s.key}
                       onClick={() => toggleService(s.key)}
-                      className={`p-2.5 rounded-xl border text-xs font-semibold text-left transition-colors ${
+                      className={`p-2.5 rounded-xl border text-xs font-semibold text-left transition-colors flex items-center justify-between ${
                         isChecked
                           ? 'bg-amber-500/20 border-amber-500 text-amber-300'
                           : 'bg-slate-900 border-slate-800 text-slate-400'
                       }`}
                     >
-                      {isChecked ? '✓ ' : '+ '} {s.label}
+                      <span>{s.label}</span>
+                      <span>{isChecked ? '✓' : '+'}</span>
                     </button>
                   );
                 })}
@@ -508,9 +717,12 @@ export const MechanicPortal: React.FC = () => {
 
             {/* Towing Crane Toggle */}
             <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
-              <div>
-                <div className="text-xs font-bold text-white">Do you have a Towing Crane / Flatbed?</div>
-                <div className="text-[11px] text-slate-400">Receive high-ticket towing recovery calls</div>
+              <div className="flex items-center gap-2.5">
+                <Truck className="w-5 h-5 text-amber-400" />
+                <div>
+                  <div className="text-xs font-bold text-white">Do you have a Towing Crane / Flatbed?</div>
+                  <div className="text-[11px] text-slate-400">Receive high-ticket towing recovery calls</div>
+                </div>
               </div>
               <input
                 type="checkbox"
