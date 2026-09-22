@@ -6,10 +6,16 @@
     "dev": "concurrently -k \"npm --prefix backend run dev\" \"npm --prefix frontend run dev\"",
     "dev:frontend": "npm --prefix frontend run dev",
     "dev:backend": "npm --prefix backend run dev",
-    "build": "npm --prefix frontend install && npm --prefix frontend run build && npm --prefix backend install",
+    "build": "npm --prefix frontend install --include=dev && npm --prefix frontend run build && npm --prefix backend install",
     "build:frontend": "npm --prefix frontend run build",
     "start": "node backend/server.js",
-    "install:all": "npm --prefix frontend install && npm --prefix backend install"
+    "install:all": "npm --prefix frontend install --include=dev && npm --prefix backend install"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "razorpay": "^2.9.6"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"

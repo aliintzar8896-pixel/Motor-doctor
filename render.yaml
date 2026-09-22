@@ -11,6 +11,8 @@ services:
         value: production
       - key: PORT
         value: 10000
+      - key: NPM_CONFIG_PRODUCTION
+        value: "false"
       - key: ALLOWED_ORIGINS
         value: https://motordoctor.in,https://motor-doctor-app.onrender.com
 
