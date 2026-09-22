@@ -24,11 +24,24 @@ dist-ssr
 *.sln
 *.sw?
 
-# Environment variables
+# Environment variables (keep examples safe)
 .env
-.env.production
-.env.staging
-.env.local
+.env.*
+!.env.example
 
-# TypeScript cache
+# TypeScript cache & build outputs
 *.tsbuildinfo
+dist
+dist-ssr
+build
+
+# Python cache & artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+
+# OS & temporary files
+Thumbs.db
+[Ee]xpress/
+*.tmp
+*.bak

@@ -35,9 +35,27 @@ export const MechanicPortal: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState<'dashboard' | 'register'>('dashboard');
 
-  // Find mechanic record corresponding to current mechanic or first one
-  const myMechanicRecord = mechanics.find(m => m.id === 'mech-101') || mechanics[0];
-  const isOnline = myMechanicRecord?.isAvailable ?? true;
+  // Find mechanic record corresponding to current mechanic or first one with safe fallback
+  const defaultMechanic: Mechanic = {
+    id: 'mech-101',
+    name: 'Mohammad Tariq',
+    shopName: 'Tariq Auto Care & 24x7 Recovery',
+    phone: '+91 98371 45820',
+    address: 'NH-24 Bypass, Near TMU Moradabad',
+    city: 'Moradabad',
+    isAvailable: true,
+    rating: 4.9,
+    reviewsCount: 142,
+    baseCharge: 350,
+    services: ['puncture', 'battery', 'engine', 'towing'] as ServiceSpecialty[],
+    lat: 28.8386,
+    lng: 78.7733,
+    distanceKm: 2.1,
+    etaMinutes: 15,
+    isVerified: true
+  };
+  const myMechanicRecord = mechanics.find(m => m.id === 'mech-101') || mechanics[0] || defaultMechanic;
+  const isOnline = myMechanicRecord.isAvailable;
 
   // Requests assigned to this mechanic or pending highway requests
   const incomingRequests = serviceRequests.filter(r => 
