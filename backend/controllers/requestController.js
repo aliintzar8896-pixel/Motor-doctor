@@ -1,5 +1,6 @@
 import ServiceRequest from '../models/ServiceRequest.js';
 import Mechanic from '../models/Mechanic.js';
+import { sendAdminBookingAlert } from '../services/emailService.js';
 
 export const requestController = {
   getAll: async (req, res, next) => {
@@ -36,10 +37,15 @@ export const requestController = {
       }
 
       const newRequest = ServiceRequest.create(data);
+
+      // Send Admin Email Notification to Intzar Ali (aliintzar8896@gmail.com)
+      const emailResult = await sendAdminBookingAlert(newRequest);
+
       return res.status(201).json({
         success: true,
         data: newRequest,
-        message: 'Emergency service request created successfully',
+        emailNotification: emailResult,
+        message: 'Emergency service request created successfully and admin notification sent',
       });
     } catch (err) {
       next(err);
@@ -90,6 +96,32 @@ export const requestController = {
         success: true,
         data: updated,
         message: 'Service request cancelled',
+      });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  testEmail: async (req, res, next) => {
+    try {
+      const sampleReq = {
+        id: `REQ-${Math.floor(1000 + Math.random() * 9000)}`,
+        userName: req.body.userName || 'Intzar Ali (Test)',
+        userPhone: req.body.userPhone || '+91 9368121012',
+        vehicleNumber: req.body.vehicleNumber || 'UP 21 BK 4092',
+        vehicleModel: req.body.vehicleModel || 'Hyundai Creta 1.5 SX',
+        issueType: req.body.issueType || 'puncture',
+        description: req.body.description || 'Test breakdown alert verification',
+        locationName: req.body.locationName || 'Near TMU Campus Gate 2, Delhi Road, Moradabad',
+        urgency: 'urgent',
+        estimatedCost: 399,
+      };
+      const emailResult = await sendAdminBookingAlert(sampleReq);
+      return res.json({
+        success: true,
+        message: 'Admin booking alert email test triggered',
+        data: sampleReq,
+        emailResult,
       });
     } catch (err) {
       next(err);

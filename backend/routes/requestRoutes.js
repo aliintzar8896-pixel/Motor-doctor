@@ -6,6 +6,7 @@ const router = Router();
 router.get('/', requestController.getAll);
 router.get('/:id', requestController.getById);
 router.post('/', requestController.create);
+router.post('/test-email', requestController.testEmail);
 router.patch('/:id/status', requestController.updateStatus);
 router.patch('/:id/payment', requestController.updatePayment);
 router.delete('/:id', requestController.cancel);

@@ -29,33 +29,66 @@ import {
 import { formatINR } from '../../utils/utils';
 import { useNavigate } from 'react-router-dom';
 
+export interface InitialServiceFormData {
+  userName?: string;
+  userPhone?: string;
+  vehicleType?: VehicleType;
+  vehicleModel?: string;
+  vehicleNumber?: string;
+  issueType?: ServiceSpecialty;
+  urgency?: UrgencyLevel;
+  description?: string;
+  locationName?: string;
+  landmark?: string;
+}
+
 interface EmergencyRequestModalProps {
   isOpen: boolean;
   onClose: () => void;
   preselectedMechanic?: Mechanic | null;
+  initialData?: InitialServiceFormData | null;
 }
 
 export const EmergencyRequestModal: React.FC<EmergencyRequestModalProps> = ({
   isOpen,
   onClose,
-  preselectedMechanic
+  preselectedMechanic,
+  initialData
 }) => {
   const { currentUser, userCoords, createRequest, mechanics } = useApp();
   const navigate = useNavigate();
 
-  const [vehicleType, setVehicleType] = useState<VehicleType>('sedan');
-  const [vehicleModel, setVehicleModel] = useState(currentUser.vehicleModel || 'Hyundai Creta');
-  const [vehicleNumber, setVehicleNumber] = useState(currentUser.vehicleNumber || 'UP 21 BK 4092');
-  const [issueType, setIssueType] = useState<ServiceSpecialty>('battery');
-  const [urgency, setUrgency] = useState<UrgencyLevel>('urgent');
-  const [description, setDescription] = useState('');
-  const [landmark, setLandmark] = useState('');
-  const [locationName, setLocationName] = useState(userCoords.address);
+  const [userName, setUserName] = React.useState(initialData?.userName || currentUser.name || '');
+  const [userPhone, setUserPhone] = React.useState(initialData?.userPhone || currentUser.phone || '');
+  const [vehicleType, setVehicleType] = useState<VehicleType>(initialData?.vehicleType || 'sedan');
+  const [vehicleModel, setVehicleModel] = useState(initialData?.vehicleModel || currentUser.vehicleModel || 'Hyundai Creta');
+  const [vehicleNumber, setVehicleNumber] = useState(initialData?.vehicleNumber || currentUser.vehicleNumber || 'UP 21 BK 4092');
+  const [issueType, setIssueType] = useState<ServiceSpecialty>(initialData?.issueType || 'battery');
+  const [urgency, setUrgency] = useState<UrgencyLevel>(initialData?.urgency || 'urgent');
+  const [description, setDescription] = useState(initialData?.description || '');
+  const [landmark, setLandmark] = useState(initialData?.landmark || '');
+  const [locationName, setLocationName] = useState(initialData?.locationName || userCoords.address);
   const [selectedMechId, setSelectedMechId] = useState<string>(preselectedMechanic?.id || '');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>('pay_on_delivery');
   const [paymentRefId, setPaymentRefId] = useState<string | undefined>();
   const [upiId, setUpiId] = useState<string | undefined>();
+
+  // Synchronize with incoming initialData when passed
+  React.useEffect(() => {
+    if (initialData) {
+      if (initialData.userName !== undefined) setUserName(initialData.userName);
+      if (initialData.userPhone !== undefined) setUserPhone(initialData.userPhone);
+      if (initialData.vehicleType) setVehicleType(initialData.vehicleType);
+      if (initialData.vehicleModel) setVehicleModel(initialData.vehicleModel);
+      if (initialData.vehicleNumber) setVehicleNumber(initialData.vehicleNumber);
+      if (initialData.issueType) setIssueType(initialData.issueType);
+      if (initialData.urgency) setUrgency(initialData.urgency);
+      if (initialData.description !== undefined) setDescription(initialData.description);
+      if (initialData.locationName) setLocationName(initialData.locationName);
+      if (initialData.landmark !== undefined) setLandmark(initialData.landmark);
+    }
+  }, [initialData, isOpen]);
 
   if (!isOpen) return null;
 
@@ -86,6 +119,8 @@ export const EmergencyRequestModal: React.FC<EmergencyRequestModalProps> = ({
     e.preventDefault();
 
     createRequest({
+      userName: userName || currentUser.name || 'Vehicle Owner',
+      userPhone: userPhone || currentUser.phone || '+91 9368121012',
       vehicleType,
       vehicleModel,
       vehicleNumber,
@@ -133,6 +168,36 @@ export const EmergencyRequestModal: React.FC<EmergencyRequestModalProps> = ({
         </div>
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-6">
+
+          {/* Customer Contact Details */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 bg-slate-900/60 p-4 rounded-2xl border border-slate-800/80">
+            <div>
+              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                Customer Name
+              </label>
+              <input
+                type="text"
+                required
+                value={userName}
+                onChange={e => setUserName(e.target.value)}
+                placeholder="e.g. Intzar Ali / Customer Name"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs focus:outline-none focus:border-amber-500"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                Contact / Mobile Number
+              </label>
+              <input
+                type="tel"
+                required
+                value={userPhone}
+                onChange={e => setUserPhone(e.target.value)}
+                placeholder="e.g. +91 93681 21012"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs focus:outline-none focus:border-amber-500"
+              />
+            </div>
+          </div>
           
           {/* Urgency Selector */}
           <div>

@@ -3,7 +3,8 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AppProvider } from './context/AppContext';
 import { Navbar } from './components/layout/Navbar';
 import { Footer } from './components/layout/Footer';
-import { EmergencyRequestModal } from './components/emergency/EmergencyRequestModal';
+import { EmergencyRequestModal, InitialServiceFormData } from './components/emergency/EmergencyRequestModal';
+import { AIVoiceAssistant } from './components/ai/AIVoiceAssistant';
 import { Toaster } from 'sonner';
 
 // Pages
@@ -21,10 +22,16 @@ import { ContactUs } from './pages/ContactUs';
 
 export const AppContent: React.FC = () => {
   const [isGlobalSOSModalOpen, setIsGlobalSOSModalOpen] = useState(false);
+  const [prefilledData, setPrefilledData] = useState<InitialServiceFormData | null>(null);
+
+  const handleOpenEmergencyFromVoice = (data: InitialServiceFormData) => {
+    setPrefilledData(data);
+    setIsGlobalSOSModalOpen(true);
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-slate-950 text-slate-100 selection:bg-amber-500 selection:text-slate-950">
-      <Navbar onOpenSOSModal={() => setIsGlobalSOSModalOpen(true)} />
+      <Navbar onOpenSOSModal={() => { setPrefilledData(null); setIsGlobalSOSModalOpen(true); }} />
       
       <main className="flex-grow">
         <Routes>
@@ -45,11 +52,15 @@ export const AppContent: React.FC = () => {
 
       <Footer />
 
-      {/* Global SOS Breakdown Request Modal */}
+      {/* Global SOS Breakdown Request Modal connected to form sync */}
       <EmergencyRequestModal
         isOpen={isGlobalSOSModalOpen}
         onClose={() => setIsGlobalSOSModalOpen(false)}
+        initialData={prefilledData}
       />
+
+      {/* Multilingual AI Voice Assistant Widget */}
+      <AIVoiceAssistant onOpenEmergencyModal={handleOpenEmergencyFromVoice} />
 
       <Toaster 
         position="top-right" 

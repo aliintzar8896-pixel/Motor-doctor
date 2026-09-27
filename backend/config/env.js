@@ -32,6 +32,16 @@ export const config = {
   RAZORPAY_KEY_SECRET: process.env.RAZORPAY_KEY_SECRET || '',
   DATABASE_URL: process.env.DATABASE_URL || '',
   JWT_SECRET: process.env.JWT_SECRET || 'motor_doctor_secret_jwt_key_2026',
+
+  // Nodemailer SMTP Email Notification Configuration
+  SMTP_HOST: process.env.SMTP_HOST || 'smtp.gmail.com',
+  SMTP_PORT: parseInt(process.env.SMTP_PORT || '587', 10),
+  SMTP_SECURE: process.env.SMTP_SECURE === 'true',
+  SMTP_USER: process.env.SMTP_USER || '',
+  SMTP_PASS: process.env.SMTP_PASS || '',
+  SMTP_FROM: process.env.SMTP_FROM || (process.env.SMTP_USER ? `"Motor Doctor 24x7" <${process.env.SMTP_USER}>` : '"Motor Doctor 24x7" <no-reply@motordoctor.in>'),
+  ADMIN_EMAIL: process.env.ADMIN_EMAIL || 'aliintzar8896@gmail.com',
+  ADMIN_NAME: process.env.ADMIN_NAME || 'Intzar Ali',
 };
 
 export default config;

@@ -25,6 +25,8 @@ import { toast } from 'sonner';
 import { mechanicService, requestService, authService } from '../services';
 
 interface CreateRequestParams {
+  userName?: string;
+  userPhone?: string;
   vehicleType: VehicleType;
   vehicleModel: string;
   vehicleNumber: string;
@@ -224,8 +226,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const newReq: ServiceRequest = {
       id: `REQ-${Math.floor(1000 + Math.random() * 9000)}`,
       userId: currentUser.id,
-      userName: currentUser.name || 'Vehicle Owner',
-      userPhone: currentUser.phone || '+91 98199 12166',
+      userName: params.userName || currentUser.name || 'Vehicle Owner',
+      userPhone: params.userPhone || currentUser.phone || '+91 9368121012',
       vehicleType: params.vehicleType,
       vehicleModel: params.vehicleModel || 'Car / Bike',
       vehicleNumber: params.vehicleNumber || 'Unregistered',
@@ -251,6 +253,28 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     };
 
     setServiceRequests(prev => [newReq, ...prev]);
+
+    // Asynchronously synchronize with Motor Doctor backend & trigger Admin Email
+    requestService.createRequest({
+      ...params,
+      id: newReq.id,
+      userId: newReq.userId,
+      userName: newReq.userName,
+      userPhone: newReq.userPhone,
+      estimatedCost: newReq.estimatedCost,
+      status: newReq.status,
+      otp: newReq.otp,
+      mechanicId: newReq.mechanicId,
+    }).then((res: any) => {
+      if (res?.data?.id) {
+        setServiceRequests(prev => prev.map(r => r.id === newReq.id ? { ...r, id: res.data.id } : r));
+      }
+      if (res?.emailNotification?.success) {
+        toast.success(`Admin alert sent to aliintzar8896@gmail.com`);
+      }
+    }).catch(err => {
+      console.warn('Backend synchronization notice:', err?.message || err);
+    });
 
     // Sound effect based on urgency
     if (params.urgency === 'sos') {
