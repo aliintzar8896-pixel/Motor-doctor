@@ -9,6 +9,9 @@ const getApiBaseUrl = (): string => {
   if (envUrl) {
     return envUrl.replace(/\/$/, '');
   }
+  if (import.meta.env.PROD) {
+    return 'https://motor-doctor.onrender.com';
+  }
   // When running locally under Vite dev server, relative '/api' is forwarded by Vite proxy to localhost:5000
   return '';
 };
@@ -63,7 +66,7 @@ export async function apiRequest<T = any>(
     console.error(`[API Error] Request failed to ${url}:`, err);
     throw new Error(
       err?.name === 'TypeError' || err?.message === 'Failed to fetch'
-        ? `Motor Doctor server connection failed. Please ensure the backend is running on port 5000.`
+        ? 'Motor Doctor server connection failed. Please check your connection and try again.'
         : err?.message || 'Network request failed'
     );
   }
